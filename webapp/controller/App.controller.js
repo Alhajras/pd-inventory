@@ -1,7 +1,8 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
-    "sap/ui/model/json/JSONModel"
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/core/library",
 ], function (Controller, MessageToast, JSONModel) {
     "use strict";
 
@@ -13,10 +14,20 @@ sap.ui.define([
                     name: "World"
                 },
                 people: [
-                    { name: "John Doe", age: 25 },
-                    { name: "Jane Smith", age: 30 },
-                    { name: "Bob Johnson", age: 45 }
-                ]
+                    {
+                        notes: 'Buy it now',
+                        name: "John Doe",
+                        link: 'https://www.youtube.com/watch?v=5YAaeOonFRI&ab_channel=Money%26Macro',
+                        quantity: 6,
+                        price: '5.0$'
+                    },
+                    {
+                        notes: 'Buy it tomorrow',
+                        name: "Jane Smith",
+                        link: 'https://www.youtube.com/watch?v=5YAaeOonFRI&ab_channel=Money%26Macro',
+                        quantity: 6,
+                        price: '5.0$'
+                    }]
             };
 
             // Create and set JSON model
@@ -24,57 +35,82 @@ sap.ui.define([
             this.getView().setModel(oModel);
         },
 
-        // Open the dialog to add a new user
         onOpenDialog: function () {
-            if (!this._oDialog) {
-                this._oDialog = this.byId("userDialog");
-            }
-            this._oDialog.open();
+            this.dialog = this.byId("userDialog");
+            this.dialog.open();
         },
 
-        // Handle the OK button click on the dialog
-        onDialogOk: function () {
-            // Get the input values
-            var oInputName = this.byId("inputName");
-            var oInputAge = this.byId("inputAge");
+        // Handle the "Add" button press inside the dialog
+        onAddUser: function () {
+            const oModel = this.getView().getModel();
+            const users = oModel.getProperty("/people");
 
-            var sName = oInputName.getValue();
-            var iAge = parseInt(oInputAge.getValue(), 10);
+            // Get references to the input fields
+            const nameInput = this.byId("nameInput");
+            const quantityInput = this.byId("quantity");
+            const linkInput = this.byId("link");
+            const priceInput = this.byId("price");
+            const notesInput = this.byId("notes");
 
-            if (sName && iAge) {
-                // Get the model and current data
-                var oModel = this.getView().getModel();
-                var aPeople = oModel.getProperty("/people");
+            const name = nameInput.getValue();
+            const quantity = quantityInput.getValue();
+            const link = linkInput.getValue();
+            const price = priceInput.getValue();
+            const notes = notesInput.getValue();
 
-                // Add the new person to the array
-                aPeople.push({ name: sName, age: iAge });
+            // Perform validation
+            let isValid = true;
 
-                // Update the model
-                oModel.setProperty("/people", aPeople);
+            if (!name) {
+                nameInput.setValueState(ValueState.Error);
+                nameInput.setValueStateText("Name cannot be empty");
+                isValid = false;
+            }
+
+            if (!link) {
+                linkInput.setValueState(ValueState.Error);
+                linkInput.setValueStateText("Link cannot be empty");
+                isValid = false;
+            }
+
+            if (!quantity || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+                quantityInput.setValueState(ValueState.Error);
+                quantityInput.setValueStateText("Please enter a valid quantity greater than 0");
+                isValid = false;
+            }
+
+            if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+                priceInput.setValueState(ValueState.Error);
+                priceInput.setValueStateText("Please enter a valid price greater than 0");
+                isValid = false;
+            }
+
+            // If inputs are valid, add the user and close the dialog
+            if (isValid) {
+                users.push({name, notes, link, price: parseInt(price, 10), age: parseInt(quantity, 10)});
+                oModel.setProperty("/users", users);
+                MessageToast.show("User added successfully");
 
                 // Close the dialog
-                this._oDialog.close();
-
-                // Clear the inputs
-                oInputName.setValue("");
-                oInputAge.setValue("");
+                this.dialog.close();
             } else {
-                MessageToast.show("Please enter both a name and age.");
+                MessageToast.show("Please fix the errors before adding the user.");
             }
         },
 
-        // Handle the Cancel button click on the dialog
-        onDialogCancel: function () {
-            this._oDialog.close();
+        // Handle the "Cancel" button press inside the dialog
+        onCancel: function () {
+            this.dialog.close();
         },
 
-        // Reset the dialog inputs when it is closed
+        // Handle dialog close event
         onDialogClose: function () {
-            var oInputName = this.byId("inputName");
-            var oInputAge = this.byId("inputAge");
-
-            oInputName.setValue("");
-            oInputAge.setValue("");
+            // Clear the inputs when the dialog is closed
+            this.byId("nameInput").setValue("");
+            this.byId("quantity").setValue("");
+            this.byId("link").setValue("");
+            this.byId("price").setValue("");
+            this.byId("notes").setValue("");
         }
     });
 });
