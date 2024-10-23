@@ -1,0 +1,61 @@
+<mvc:View
+    controllerName="ui5.walkthrough.controller.App"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc">
+
+    <!-- Button to open the dialog -->
+    <Button
+        text="Add User"
+        press=".onOpenDialog"
+    />
+
+    <!-- Input Field with Data Binding -->
+    <Input
+        value="{/recipient/name}"
+        description="Hello {/recipient/name}"
+        valueLiveUpdate="true"
+        width="60%"
+    />
+
+    <!-- Table -->
+    <Table id="myTable" items="{/people}">
+        <columns>
+            <Column>
+                <Text text="Name" />
+            </Column>
+            <Column>
+                <Text text="Age" />
+            </Column>
+        </columns>
+        <items>
+            <ColumnListItem>
+                <cells>
+                    <Text text="{name}" />
+                    <Text text="{age}" />
+                </cells>
+            </ColumnListItem>
+        </items>
+    </Table>
+
+    <!-- Dialog Definition (Initially hidden) -->
+    <Dialog
+        id="userDialog"
+        title="Add New User"
+        stretchOnPhone="true"
+        afterClose=".onDialogClose"
+    >
+        <VBox>
+            <Label text="Name" />
+            <Input id="inputName" placeholder="Enter Name" />
+            <Label text="Age" />
+            <Input id="inputAge" type="Number" placeholder="Enter Age" />
+        </VBox>
+        <beginButton>
+            <Button text="OK" press=".onDialogOk" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press=".onDialogCancel" />
+        </endButton>
+    </Dialog>
+
+</mvc:View>
